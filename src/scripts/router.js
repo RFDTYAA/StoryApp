@@ -11,33 +11,35 @@ const routes = {
   "/register": RegisterView,
 };
 
-let currentView = null;
+const isLoggedIn = () => {
+  return localStorage.getItem("token") !== null;
+};
 
-export const router = () => {
-  const hash = window.location.hash.slice(1).toLowerCase() || "/home";
-  const token = localStorage.getItem("token");
+const handleRouting = () => {
+  const path = window.location.hash.slice(1).toLowerCase() || "/";
+  const privateRoutes = ["/", "/home", "/add"];
+  const publicRoutes = ["/login", "/register"];
 
-  // Tidak ada lagi rute yang diproteksi
-  const protectedRoutes = [];
-
-  if (protectedRoutes.includes(hash) && !token) {
+  if (privateRoutes.includes(path) && !isLoggedIn()) {
     window.location.hash = "#/login";
     return;
   }
 
-  // Jika pengguna sudah login tapi mencoba akses halaman login/register,
-  // alihkan ke halaman utama.
-  if ((hash === "/login" || hash === "/register") && token) {
-    window.location.hash = "#/home";
+  if (publicRoutes.includes(path) && isLoggedIn()) {
+    window.location.hash = "#/";
     return;
   }
 
-  const View = routes[hash] || routes["/home"];
+  const View = routes[path] || routes["/"];
+  const view = new View();
 
-  if (currentView && typeof currentView.cleanup === "function") {
-    currentView.cleanup();
+  const appContent = document.getElementById("app-content");
+  if (appContent) {
+    appContent.innerHTML = "";
+    view.render();
+  } else {
+    console.error("Elemen dengan ID 'app-content' tidak ditemukan!");
   }
-
-  currentView = new View();
-  currentView.render();
 };
+
+export { handleRouting };

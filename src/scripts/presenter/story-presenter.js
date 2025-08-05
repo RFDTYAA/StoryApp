@@ -4,17 +4,15 @@ export class StoryPresenter {
     this.view = view;
   }
 
-  async loadStories(token) {
+  async loadStories() {
     try {
-      // Panggil nama method yang benar dan teruskan token-nya
-      const stories = await this.model.getStories(token);
+      const stories = await this.model.getStories();
 
       this.view.renderStories(stories);
       this.view.renderMap(stories);
     } catch (err) {
       console.error("Gagal memuat cerita:", err);
-      // Anda bisa tambahkan logika untuk menampilkan error ke pengguna di sini
-      // contoh: this.view.showError(err.message);
+      this.view.showError(err.message);
     }
   }
 }

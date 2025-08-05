@@ -1,30 +1,22 @@
 export class StoryModel {
   constructor() {
-    this.API_ENDPOINT = "https://story-api.dicoding.dev/v1";
-  }
-
-  //-- Metode Pengelola Token --//
-  saveToken(token) {
-    localStorage.setItem("token", token);
+    this.API_ENDPOINT = "/api/v1";
   }
 
   getToken() {
     return localStorage.getItem("token");
   }
 
-  removeToken() {
-    localStorage.removeItem("token");
-  }
-
-  //-- Metode API Cerita --//
-  async getStories(token) {
-    const headers = { "Content-Type": "application/json" };
-    if (token) {
-      headers["Authorization"] = `Bearer ${token}`;
+  async getStories() {
+    const token = this.getToken();
+    if (!token) {
+      throw new Error("Anda harus login untuk melihat cerita.");
     }
 
-    const response = await fetch("https://story-api.dicoding.dev/v1/stories/", {
-      headers,
+    const response = await fetch(`${this.API_ENDPOINT}/stories`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
     });
 
     const data = await response.json();
@@ -42,13 +34,16 @@ export class StoryModel {
 
     const response = await fetch(`${this.API_ENDPOINT}/stories`, {
       method: "POST",
-      headers: { Authorization: `Bearer ${token}` },
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
       body: formData,
     });
 
     const data = await response.json();
-    if (!response.ok)
+    if (!response.ok) {
       throw new Error(data.message || "Gagal menambahkan cerita.");
+    }
     return data;
   }
 }

@@ -1,10 +1,5 @@
 import "./styles/main.css";
-import { router } from "./scripts/router.js";
+import { handleRouting } from "./scripts/router.js";
 
-window.addEventListener("hashchange", () => {
-  router();
-});
-
-window.addEventListener("load", () => {
-  router();
-});
+window.addEventListener("hashchange", handleRouting);
+window.addEventListener("load", handleRouting);

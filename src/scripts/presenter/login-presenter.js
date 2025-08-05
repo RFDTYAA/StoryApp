@@ -7,8 +7,8 @@ export class LoginPresenter {
   async login(email, password) {
     try {
       const result = await this.model.login(email, password);
-      localStorage.setItem("token", result.loginResult.token);
       this.view.showSuccess(`Selamat datang, ${result.loginResult.name}`);
+      window.location.hash = "#/home";
     } catch (err) {
       this.view.showError(err.message);
     }

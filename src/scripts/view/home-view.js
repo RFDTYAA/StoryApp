@@ -9,14 +9,9 @@ export class HomeView {
   }
 
   async afterRender() {
-    // Tetap ambil token, bisa bernilai null jika belum login
-    const token = localStorage.getItem("token");
-
-    // Hapus pengecekan 'if (!token)' yang mengalihkan ke login
-    // Langsung jalankan proses pengambilan data
     const model = new StoryModel();
     const presenter = new StoryPresenter(model, this);
-    presenter.loadStories(token); // Kirim token (bisa null) ke presenter
+    presenter.loadStories();
   }
 
   renderStories(stories) {
@@ -46,5 +41,10 @@ export class HomeView {
         marker.bindPopup(`<b>${s.name}</b><br>${s.description}`);
       }
     });
+  }
+
+  showError(message) {
+    const list = document.getElementById("storyList");
+    list.innerHTML = `<p class="error-message">${message}</p>`;
   }
 }
