@@ -1,3 +1,6 @@
+import { StoryModel } from "../model/story-model.js";
+import { AddStoryPresenter } from "../presenter/add-story-presenter.js";
+
 export class AddStoryView {
   constructor() {
     this._mediaStream = null;
@@ -30,7 +33,8 @@ export class AddStoryView {
             <input type="hidden" id="longitude" name="lon">
           </div>
           
-          <button type="submit">Unggah Cerita</button>
+          <button type="submit" id="submit-story-btn">Unggah Cerita</button>
+          <p id="upload-status" class="upload-status"></p>
         </form>
       </div>
     `;
@@ -94,7 +98,54 @@ export class AddStoryView {
       photoResult.style.display = "block";
     });
 
-    // Event listener untuk form submit ditangani oleh presenter
+    const form = document.getElementById("add-story-form");
+    form.addEventListener("submit", (event) => {
+      event.preventDefault();
+
+      const model = new StoryModel();
+      const presenter = new AddStoryPresenter(model, this);
+
+      const description = document.getElementById("description").value;
+      const latitude = document.getElementById("latitude").value;
+      const longitude = document.getElementById("longitude").value;
+      const canvas = document.getElementById("photo-canvas");
+
+      if (canvas.toDataURL() === document.createElement("canvas").toDataURL()) {
+        this.showError("Silakan ambil gambar terlebih dahulu.");
+        return;
+      }
+
+      canvas.toBlob((blob) => {
+        const formData = new FormData();
+        formData.append("description", description);
+        formData.append("lat", latitude);
+        formData.append("lon", longitude);
+        formData.append("photo", blob, "story.jpg");
+
+        presenter.addStory(formData);
+      }, "image/jpeg");
+    });
+  }
+
+  showLoading() {
+    document.getElementById("upload-status").innerText = "Mengunggah...";
+    document.getElementById("upload-status").style.color = "black";
+    document.getElementById("submit-story-btn").disabled = true;
+  }
+
+  hideLoading() {
+    document.getElementById("upload-status").innerText = "";
+    document.getElementById("submit-story-btn").disabled = false;
+  }
+
+  showSuccess(message) {
+    document.getElementById("upload-status").innerText = message;
+    document.getElementById("upload-status").style.color = "green";
+  }
+
+  showError(message) {
+    document.getElementById("upload-status").innerText = `Error: ${message}`;
+    document.getElementById("upload-status").style.color = "red";
   }
 
   _stopCamera() {
