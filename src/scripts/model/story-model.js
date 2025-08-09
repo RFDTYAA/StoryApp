@@ -1,3 +1,5 @@
+import { StoryDb } from "../utils/db-helper.js";
+
 export class StoryModel {
   constructor() {
     this.API_ENDPOINT = "/api/v1";
@@ -8,6 +10,23 @@ export class StoryModel {
   }
 
   async getStories() {
+    try {
+      const stories = await this._fetchFromApi();
+      await StoryDb.putAllStories(stories);
+      return stories;
+    } catch (err) {
+      console.log(
+        "Gagal mengambil dari API, mencoba mengambil dari database lokal..."
+      );
+      const stories = await StoryDb.getAllStories();
+      if (stories && stories.length > 0) {
+        return stories;
+      }
+      throw new Error("Gagal memuat cerita. Periksa koneksi internet Anda.");
+    }
+  }
+
+  async _fetchFromApi() {
     const token = this.getToken();
     if (!token) {
       throw new Error("Anda harus login untuk melihat cerita.");
@@ -19,10 +38,12 @@ export class StoryModel {
       },
     });
 
-    const data = await response.json();
     if (!response.ok) {
-      throw new Error(data.message || "Gagal memuat cerita.");
+      const data = await response.json();
+      throw new Error(data.message || "Gagal memuat cerita dari API.");
     }
+
+    const data = await response.json();
     return data.listStory;
   }
 

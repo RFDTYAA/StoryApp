@@ -1,0 +1,44 @@
+{
+  "name": "Story App",
+  "short_name": "StoryApp",
+  "description": "Aplikasi berbagi cerita sebagai Progressive Web App.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#333333",
+  "theme_color": "#ff6600",
+  "icons": [
+    {
+      "src": "/icons/icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/icons/icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Tambah Cerita Baru",
+      "url": "/#/add",
+      "icons": [{ "src": "/icons/icon-add-96x96.png", "sizes": "96x96" }]
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "/screenshots/desktop-screenshot-1.jpg",
+      "sizes": "1280x720",
+      "type": "image/jpeg",
+      "form_factor": "wide",
+      "label": "Tampilan Utama di Desktop"
+    },
+    {
+      "src": "/screenshots/mobile-screenshot-1.jpg",
+      "sizes": "540x720",
+      "type": "image/jpeg",
+      "form_factor": "narrow",
+      "label": "Tampilan Utama di Mobile"
+    }
+  ]
+}

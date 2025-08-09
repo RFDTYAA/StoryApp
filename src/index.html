@@ -1,31 +1,44 @@
 <!DOCTYPE html>
-<html lang="id">
+<html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <!-- Meta untuk PWA -->
+    <meta name="theme-color" content="#ff6600" />
+    <link rel="manifest" href="/manifest.json" />
+
     <title>Story App</title>
     <link
       rel="stylesheet"
       href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-      integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
-      crossorigin=""
     />
-    <link rel="stylesheet" href="styles/main.css" />
   </head>
   <body>
+    <!-- Kriteria Wajib 1: Tombol Skip to Content -->
+    <a href="#main-content" class="skip-to-content">Skip to Content</a>
+
     <header>
-      <nav class="navbar">
-        <a class="navbar-brand" href="/">Story App</a>
-        <ul class="nav-links">
-          <li><a href="#/home">Home</a></li>
-          <li><a href="#/add">Tambah Cerita</a></li>
-          <li><a href="#/login">Login</a></li>
-          <li><a href="#/register">Daftar</a></li>
+      <h1>Story App</h1>
+      <nav>
+        <ul>
+          <!-- ID ditambahkan untuk kontrol dinamis -->
+          <li id="nav-home"><a href="#/">Home</a></li>
+          <li id="nav-add"><a href="#/add">Tambah Cerita</a></li>
+          <li id="nav-login"><a href="#/login">Login</a></li>
+          <li id="nav-register"><a href="#/register">Daftar</a></li>
+          <!-- Notes: Tombol Logout ditambahkan -->
+          <li id="nav-logout" style="display: none">
+            <button id="logout-button">Logout</button>
+          </li>
         </ul>
       </nav>
     </header>
 
-    <main id="app-content"></main>
+    <!-- ID ditambahkan sebagai target skip link -->
+    <main id="main-content">
+      <div id="app-content"></div>
+    </main>
 
     <footer>
       <p>
@@ -34,11 +47,7 @@
       </p>
     </footer>
 
-    <script
-      src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
-      integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
-      crossorigin=""
-    ></script>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script type="module" src="/main.js"></script>
   </body>
 </html>

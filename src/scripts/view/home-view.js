@@ -22,11 +22,35 @@ export class HomeView {
       div.className = "card";
       div.innerHTML = `
         <img src="${story.photoUrl}" alt="Foto oleh ${story.name}" />
-        <h3>${story.name}</h3>
-        <p>${story.description}</p>
-        <small>${new Date(story.createdAt).toLocaleString()}</small>
+        <div class="card-content">
+          <h3>${story.name}</h3>
+          <p>${story.description}</p>
+          <small>${new Date(story.createdAt).toLocaleString()}</small>
+          <!-- Tombol Simpan Offline -->
+          <button class="save-offline-btn" data-id="${
+            story.id
+          }">Simpan Offline</button>
+        </div>
       `;
       list.appendChild(div);
+    });
+    this._addSaveButtonListeners(stories);
+  }
+
+  _addSaveButtonListeners(stories) {
+    const model = new StoryModel();
+    const presenter = new StoryPresenter(model, this);
+
+    document.querySelectorAll(".save-offline-btn").forEach((button) => {
+      button.addEventListener("click", (event) => {
+        const storyId = event.target.dataset.id;
+        const storyToSave = stories.find((s) => s.id === storyId);
+        if (storyToSave) {
+          presenter.saveStoryForOffline(storyToSave);
+          event.target.innerText = "Tersimpan!";
+          event.target.disabled = true;
+        }
+      });
     });
   }
 
