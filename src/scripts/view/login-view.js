@@ -27,10 +27,22 @@ export class LoginView {
   }
 
   showSuccess(message) {
-    document.getElementById("loginStatus").textContent = message;
+    const statusEl = document.getElementById("loginStatus");
+    if (statusEl) {
+      statusEl.textContent = message;
+      statusEl.style.color = "green";
+    } else {
+      console.error("Elemen #loginStatus tidak ditemukan di halaman login");
+    }
   }
 
   showError(error) {
-    document.getElementById("loginStatus").textContent = `Gagal: ${error}`;
+    const statusEl = document.getElementById("loginStatus");
+    if (statusEl) {
+      statusEl.textContent = `Gagal: ${error}`;
+      statusEl.style.color = "red";
+    } else {
+      console.error("Elemen #loginStatus tidak ditemukan di halaman login");
+    }
   }
 }

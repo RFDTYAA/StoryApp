@@ -1,74 +1,159 @@
-import { StoryModel } from "../model/story-model.js";
-import { StoryPresenter } from "../presenter/story-presenter.js";
+import DbHelper from "../utils/db-helper.js";
+
+function escapeHtml(s = "") {
+  return String(s)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
 
 export class HomeView {
+  constructor() {
+    this.map = null;
+  }
+
   render() {
-    document.getElementById("app-content").innerHTML =
-      '<h2>Semua Cerita</h2><div id="storyList"></div><div id="map" style="height: 400px"></div>';
-    this.afterRender();
+    const app = document.getElementById("app-content");
+    if (!app) return;
+    app.innerHTML = `
+      <div class="home-container">
+        <h2>Daftar Cerita</h2>
+        <div id="map-home" style="height:320px;margin-bottom:16px"></div>
+        <div id="stories-container"></div>
+      </div>
+    `;
   }
 
-  async afterRender() {
-    const model = new StoryModel();
-    const presenter = new StoryPresenter(model, this);
-    presenter.loadStories();
+  showLoading() {
+    const app = document.getElementById("app-content");
+    const status = document.createElement("p");
+    status.id = "home-loading";
+    status.textContent = "Memuat cerita...";
+    app.prepend(status);
   }
 
-  renderStories(stories) {
-    const list = document.getElementById("storyList");
-    list.innerHTML = "";
-    stories.forEach((story) => {
-      const div = document.createElement("div");
-      div.className = "card";
-      div.innerHTML = `
-        <img src="${story.photoUrl}" alt="Foto oleh ${story.name}" />
+  hideLoading() {
+    const el = document.getElementById("home-loading");
+    if (el) el.remove();
+  }
+
+  async renderStories(stories = []) {
+    const container = document.getElementById("stories-container");
+    if (!container) return;
+    container.innerHTML = "";
+    const list = document.createElement("div");
+    list.className = "story-list";
+
+    stories.forEach((s) => {
+      const id = escapeHtml(s.id || s._id || `id-${Date.now()}`);
+      const title = escapeHtml(s.name || s.title || "Tanpa Judul");
+      const desc = escapeHtml(s.description || "");
+      const img = escapeHtml(
+        s.photoUrl || s.photo || "/icons/icon-192x192.png"
+      );
+      const created = escapeHtml(s.createdAt || "");
+
+      const lat = s.lat ?? s.latitude ?? s.location?.lat ?? null;
+      const lon = s.lon ?? s.longitude ?? s.location?.lon ?? null;
+
+      const card = document.createElement("div");
+      card.className = "card";
+      card.innerHTML = `
+        <img src="${img}" alt="${title}" />
         <div class="card-content">
-          <h3>${story.name}</h3>
-          <p>${story.description}</p>
-          <small>${new Date(story.createdAt).toLocaleString()}</small>
-          <!-- Tombol Simpan Offline -->
-          <button class="save-offline-btn" data-id="${
-            story.id
-          }">Simpan Offline</button>
+          <h3>${title}</h3>
+          <p>${desc}</p>
+          <small>${created}</small>
+          <div style="margin-top:12px;">
+            <button class="save-offline-btn" data-id="${id}">Simpan Offline</button>
+          </div>
         </div>
       `;
-      list.appendChild(div);
+      list.appendChild(card);
+
+      // Event simpan offline
+      card
+        .querySelector(".save-offline-btn")
+        .addEventListener("click", async () => {
+          await DbHelper.putStory({
+            id,
+            name: title,
+            description: desc,
+            photoUrl: img,
+            createdAt: created || new Date().toISOString(),
+            lat,
+            lon,
+          });
+          this.showSuccess("Cerita disimpan offline!");
+        });
     });
-    this._addSaveButtonListeners(stories);
+
+    container.appendChild(list);
   }
 
-  _addSaveButtonListeners(stories) {
-    const model = new StoryModel();
-    const presenter = new StoryPresenter(model, this);
-
-    document.querySelectorAll(".save-offline-btn").forEach((button) => {
-      button.addEventListener("click", (event) => {
-        const storyId = event.target.dataset.id;
-        const storyToSave = stories.find((s) => s.id === storyId);
-        if (storyToSave) {
-          presenter.saveStoryForOffline(storyToSave);
-          event.target.innerText = "Tersimpan!";
-          event.target.disabled = true;
-        }
-      });
-    });
-  }
-
-  renderMap(stories) {
-    const map = L.map("map").setView([-2, 118], 5);
+  renderMap(stories = []) {
+    const mapEl = document.getElementById("map-home");
+    if (!mapEl) return;
+    if (this.map) {
+      try {
+        this.map.off();
+        this.map.remove();
+      } catch {}
+      this.map = null;
+    }
+    const defaultCoords = [-2.5489, 118.0149];
+    try {
+      this.map = L.map(mapEl).setView(defaultCoords, 5);
+    } catch (err) {
+      this.map = L.map(mapEl.id).setView(defaultCoords, 5);
+    }
     L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png").addTo(
-      map
+      this.map
     );
+
     stories.forEach((s) => {
-      if (s.lat && s.lon) {
-        const marker = L.marker([s.lat, s.lon]).addTo(map);
-        marker.bindPopup(`<b>${s.name}</b><br>${s.description}`);
+      const lat = s.lat ?? s.latitude ?? s.location?.lat;
+      const lon = s.lon ?? s.longitude ?? s.location?.lon;
+      if (lat != null && lon != null) {
+        try {
+          L.marker([Number(lat), Number(lon)])
+            .addTo(this.map)
+            .bindPopup(
+              `<strong>${escapeHtml(s.name || "")}</strong><br>${escapeHtml(
+                s.description || ""
+              )}`
+            );
+        } catch (err) {
+          console.warn("Marker fail", err);
+        }
       }
     });
+
+    setTimeout(() => {
+      try {
+        this.map.invalidateSize();
+      } catch {}
+    }, 200);
   }
 
   showError(message) {
-    const list = document.getElementById("storyList");
-    list.innerHTML = `<p class="error-message">${message}</p>`;
+    const container =
+      document.getElementById("stories-container") ||
+      document.getElementById("app-content");
+    if (!container) return;
+    container.innerHTML = `<div class="form-container"><p style="color:red; font-weight:bold;">Error: ${escapeHtml(
+      message
+    )}</p></div>`;
+  }
+
+  showSuccess(message) {
+    const toast = document.createElement("div");
+    toast.style =
+      "position:fixed;top:80px;right:20px;background:#2ecc71;color:#fff;padding:10px;border-radius:6px;z-index:10000;";
+    toast.innerText = message;
+    document.body.appendChild(toast);
+    setTimeout(() => toast.remove(), 3000);
   }
 }

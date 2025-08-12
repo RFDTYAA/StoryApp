@@ -2,55 +2,43 @@ import { HomeView } from "./view/home-view.js";
 import { AddStoryView } from "./view/add-story-view.js";
 import { LoginView } from "./view/login-view.js";
 import { RegisterView } from "./view/register-view.js";
+import { SavedStoriesView } from "./view/saved-stories-view.js";
 
-const routes = {
-  "/": HomeView,
-  "/home": HomeView,
-  "/add": AddStoryView,
-  "/login": LoginView,
-  "/register": RegisterView,
-};
+import { StoryModel } from "./model/story-model.js";
+import { StoryPresenter } from "./presenter/story-presenter.js";
+import { AddStoryPresenter } from "./presenter/add-story-presenter.js";
 
-let currentView = null;
+import { updateNavbar } from "./utils/navigation.js";
 
-const isLoggedIn = () => {
-  return localStorage.getItem("token") !== null;
-};
+export const handleRouting = () => {
+  const hash = window.location.hash || "#/home";
+  updateNavbar();
 
-const handleRouting = () => {
-  const path = window.location.hash.slice(1).toLowerCase() || "/";
-  const privateRoutes = ["/", "/home", "/add"];
-  const publicRoutes = ["/login", "/register"];
-
-  // Aturan 1: Jika mencoba akses halaman privat TAPI belum login,
-  // paksa ke halaman login.
-  if (privateRoutes.includes(path) && !isLoggedIn()) {
-    window.location.hash = "#/login";
-    return;
-  }
-
-  // Aturan 2: Jika mencoba akses halaman publik TAPI sudah login,
-  // paksa ke halaman utama.
-  if (publicRoutes.includes(path) && isLoggedIn()) {
-    window.location.hash = "#/";
-    return;
-  }
-
-  // Panggil cleanup pada view lama sebelum render yang baru
-  if (currentView && typeof currentView.cleanup === "function") {
-    currentView.cleanup();
-  }
-
-  const View = routes[path] || routes["/login"]; // Default ke login jika path tidak valid
-  const view = new View();
-
-  currentView = view;
-
-  const appContent = document.getElementById("app-content");
-  if (appContent) {
-    appContent.innerHTML = "";
+  if (hash === "#/home" || hash === "#/") {
+    const view = new HomeView();
     view.render();
+    const model = new StoryModel();
+    const presenter = new StoryPresenter(model, view);
+    window.app = window.app || {};
+    window.app.storyPresenter = presenter;
+    presenter.loadStories();
+  } else if (hash === "#/add") {
+    const view = new AddStoryView();
+    view.render();
+    const model = new StoryModel();
+    const presenter = new AddStoryPresenter(model, view);
+    window.app = window.app || {};
+    window.app.addPresenter = presenter;
+  } else if (hash === "#/login") {
+    const view = new LoginView();
+    view.render();
+  } else if (hash === "#/register") {
+    const view = new RegisterView();
+    view.render();
+  } else if (hash === "#/saved") {
+    const view = new SavedStoriesView();
+    view.render();
+  } else {
+    window.location.hash = "#/home";
   }
 };
-
-export { handleRouting };

@@ -42,6 +42,10 @@ export class AddStoryView {
     this._initializeCamera();
     this._initializeMap();
     this._addEventListeners();
+
+    // Kamera & peta mati otomatis saat pindah halaman
+    window.addEventListener("hashchange", () => this.cleanup());
+    window.addEventListener("beforeunload", () => this.cleanup());
   }
 
   async _initializeCamera() {
@@ -152,6 +156,7 @@ export class AddStoryView {
     if (this._mediaStream) {
       this._mediaStream.getTracks().forEach((track) => track.stop());
       this._mediaStream = null;
+      console.log("Kamera dimatikan.");
     }
   }
 

@@ -1,8 +1,12 @@
-import { StoryDb } from "../utils/db-helper.js";
-
+import DbHelper from "../utils/db-helper.js";
 export class StoryModel {
   constructor() {
-    this.API_ENDPOINT = "/api/v1";
+    const isLocal =
+      window.location.hostname === "localhost" ||
+      window.location.hostname === "127.0.0.1";
+    this.API_ENDPOINT = isLocal
+      ? "/api/v1"
+      : "https://story-api.dicoding.dev/v1";
   }
 
   getToken() {
@@ -10,48 +14,31 @@ export class StoryModel {
   }
 
   async getStories() {
-    try {
-      const stories = await this._fetchFromApi();
-      await StoryDb.putAllStories(stories);
-      return stories;
-    } catch (err) {
-      console.log(
-        "Gagal mengambil dari API, mencoba mengambil dari database lokal..."
-      );
-      const stories = await StoryDb.getAllStories();
-      if (stories && stories.length > 0) {
-        return stories;
-      }
-      throw new Error("Gagal memuat cerita. Periksa koneksi internet Anda.");
-    }
-  }
-
-  async _fetchFromApi() {
     const token = this.getToken();
     if (!token) {
       throw new Error("Anda harus login untuk melihat cerita.");
     }
 
-    const response = await fetch(`${this.API_ENDPOINT}/stories`, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
+    try {
+      const response = await fetch(`${this.API_ENDPOINT}/stories`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
 
-    if (!response.ok) {
+      if (!response.ok) {
+        const err = await response.json().catch(() => ({}));
+        throw new Error(err.message || "Gagal memuat cerita dari API.");
+      }
+
       const data = await response.json();
-      throw new Error(data.message || "Gagal memuat cerita dari API.");
+      return data.listStory || [];
+    } catch (err) {
+      throw err;
     }
-
-    const data = await response.json();
-    return data.listStory;
   }
 
   async addStory(formData) {
     const token = this.getToken();
-    if (!token) {
-      throw new Error("Anda harus login untuk menambah cerita.");
-    }
+    if (!token) throw new Error("Anda harus login untuk menambah cerita.");
 
     const response = await fetch(`${this.API_ENDPOINT}/stories`, {
       method: "POST",
@@ -61,10 +48,27 @@ export class StoryModel {
       body: formData,
     });
 
-    const data = await response.json();
+    const data = await response.json().catch(() => ({}));
     if (!response.ok) {
       throw new Error(data.message || "Gagal menambahkan cerita.");
     }
+
     return data;
+  }
+
+  async saveStoryOffline(story) {
+    if (!story.id) {
+      story.id = `local-${Date.now()}`;
+    }
+    await DbHelper.putStory(story);
+    return story;
+  }
+
+  async getSavedStories() {
+    return await StoryDb.getAllStories();
+  }
+
+  async deleteSavedStory(id) {
+    return await StoryDb.deleteStory(id);
   }
 }

@@ -3,43 +3,48 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
-    <!-- Meta untuk PWA -->
     <meta name="theme-color" content="#ff6600" />
     <link rel="manifest" href="/manifest.json" />
-
     <title>Story App</title>
-    <link
-      rel="stylesheet"
-      href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-    />
+
+    <!-- Main CSS -->
+    <link rel="stylesheet" href="./styles/main.css" />
+    <link rel="stylesheet" href="./styles/toast.css" />
+
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
   </head>
   <body>
-    <!-- Kriteria Wajib 1: Tombol Skip to Content -->
-    <a href="#main-content" class="skip-to-content">Skip to Content</a>
+    <!-- Skip to content link for accessibility -->
+    <a href="#app-content" class="skip-link">Skip to Content</a>
 
+    <!-- Header / Navbar -->
     <header>
       <h1>Story App</h1>
       <nav>
         <ul>
-          <!-- ID ditambahkan untuk kontrol dinamis -->
-          <li id="nav-home"><a href="#/">Home</a></li>
-          <li id="nav-add"><a href="#/add">Tambah Cerita</a></li>
-          <li id="nav-login"><a href="#/login">Login</a></li>
-          <li id="nav-register"><a href="#/register">Daftar</a></li>
-          <!-- Notes: Tombol Logout ditambahkan -->
-          <li id="nav-logout" style="display: none">
-            <button id="logout-button">Logout</button>
+          <!-- Menu saat login -->
+      <li id="nav-home" style="display:none"><a href="#/">Home</a></li>
+      <li id="nav-add" style="display:none"><a href="#/add">Tambah Cerita</a></li>
+      <li id="nav-saved" style="display:none"><a href="#/saved">Saved Stories</a></li>
+      <li id="nav-logout" style="display:none">
+        <button id="logout-button">Logout</button>
+      </li>
+
+      <!-- Menu saat belum login -->
+      <li id="nav-login"><a href="#/login">Login</a></li>
+      <li id="nav-register"><a href="#/register">Daftar</a></li>
           </li>
         </ul>
       </nav>
     </header>
 
-    <!-- ID ditambahkan sebagai target skip link -->
+    <!-- Main content -->
     <main id="main-content">
       <div id="app-content"></div>
     </main>
 
+    <!-- Footer -->
     <footer>
       <p>
         &copy; 2025 Story App - Muhammad Rafi Aditya - Semua Hak Cipta
@@ -47,7 +52,13 @@
       </p>
     </footer>
 
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+
+    <!-- Toast notification JS -->
+    <script src="/scripts/utils/toast.js"></script>
+
+    <!-- Main JS -->
     <script type="module" src="/main.js"></script>
   </body>
 </html>
